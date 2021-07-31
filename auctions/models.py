@@ -60,14 +60,7 @@ class Comment(models.Model):
         return self.createdDate.strftime('%B %d %Y')
 
     def __str__(self):
-        return f"{self.user} {self.listing} {self.comment}"    
-
-class WatchList(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user")
-    auctions = models.ManyToManyField(Listing, related_name="auctions", blank=True)
-    
-    def __str__(self):
-        return f"{self.user}'s watchlist'"
+        return f"{self.user} {self.listing} {self.comment}"   
 
 
 

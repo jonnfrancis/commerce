@@ -2,11 +2,16 @@
 
 {% block body %}
     <h2>New Listings</h2>
-    
-       {% if success %}
-          <div class="alert alert-info">Successfully Added The Listing!</div>    
+    {%  if success  %}
+       {% if success == True %}
+          <div class="alert alert-info">Successfully Added The Listing!</div>
+       {% else %}
+          <div class="alert alert-danger">Something went wrong and your listing couldnt be added</div>    
        {% endif %}  
-        
+    {%  endif  %}   
+    {%if message%}
+       <div class="alert alert-danger">{{message}}</div>
+    {%endif%}    
     <form action="{% url 'newListing' %}" method="post">
         {% csrf_token %}
         {{ form.as_p }}

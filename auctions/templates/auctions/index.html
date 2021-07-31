@@ -8,7 +8,7 @@
             {% for listing in listings  %}
                 <div class="card border-light col col-lg-4 col-md-6 col-sm-6 col-12">
                     <a href="{% url 'listing' listing.id %}" class="card-link">
-                        <img src="{{ listing.photos.first|default:"https://www.inbounder.com.br/wp-content/themes/inbounder/images/no-image/No-Image-Found-400x264.png" }}" alt="{{ listing.mainPicture.alt_text|default:"No image found." }}" class="card-img-top">
+                        <img src="{{ listing.photos.first|default:"http://www.wellesleysocietyofartists.org/wp-content/uploads/2015/11/image-not-found.jpg" }}" alt="{{ listing.photos.image_name|default:"No image found." }}" class="card-img-top">
                     </a>
                     <div class="card-body">
                         <ul class="list-group list-group-flush">

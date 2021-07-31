@@ -32,6 +32,12 @@ class newCommentForm(ModelForm):
     class Meta:
         model = Comment
         fields = ['comment']
+        widgets = {
+            'comment': forms.TextInput(attrs={
+            'placeholder': 'Leave your comment here',
+            'class': 'form-control'
+            })
+        }
         
 
 
@@ -118,12 +124,10 @@ def listing(request, listing_id):
     }) 
 
 @login_required
-def newListing(request):
-    PictureFormSet = modelformset_factory(Photo,form=newPictureForm)
-                                        
+def newListing(request):                
     if request.method == "POST":
         form = newListingForm(request.POST,request.FILES)
-        imagesForm = PictureFormSet(request.POST, request.FILES)
+        imagesForm = newPictureForm(request.POST, request.FILES)
         if form.is_valid() and imagesForm.is_valid():
             newListing = form.save(commit = False)
             newListing.creator = request.user
@@ -161,6 +165,56 @@ def categories(request):
 
 
 @login_required
+def take_bid(request, listing_id):
+    listing = Listing.objects.get(id=listing_id)
+    offer = float(request.POST['offer'])
+    if is_valid(offer,listing):
+        listing.currentBid = offer
+        form = newBidForm(request.POST)
+        newBid = form.save(commit=False)
+        newBid.auction = listing
+        newBid.user = request.user                  
+        newBid.save()
+        listing.save()
+        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+    else:
+        return render(request, "auctions/listing.html",{
+            "listing":listing,
+            "listing_pictures": listing.photos.all(),
+            "form" : newBidForm(),
+            "error_min_value":True
+        })    
+
+
+def is_valid(offer,listing):
+    if offer >= listing.startingBid and (listing.currentBid is None or offer > listing.currentBid):
+        return True
+    else:
+        return False 
+
+def close(request,listing_id):
+    listing = Listing.objects.get(id=listing_id)
+    if request.user == listing.creator:
+        listing.flActive = False
+        listing.buyer = Bid.objects.filter(auction=listing).last().user
+        listing.save()   
+        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
+    else:
+        listing.watchers.add(request.user)
+    return HttpResponseRedirect(reverse("watchlist"))
+
+
+@login_required
+def comment(request, listing_id):
+    listing = Listing.objects.get(id=listing_id)
+    form = newCommentForm(request.POST)
+    newComment = form.save(commit=False)
+    newComment.user = request.user
+    newComment.listing = listing
+    newComment.save()
+    return HttpResponseRedirect(reverse("listing", args=['listing_id']))
+
+@login_required
 def watchlist(request):
     listings = request.user.watched_listings.all()
     categories = Category.objects.all()
@@ -189,54 +243,3 @@ def change_watchlist(request, listing_id, reverse_method):
     else:
         return HttpResponseRedirect(reverse(reverse_method)) 
 
-
-
-@login_required
-def take_bid(request, listing_id):
-    listing = Listing.objects.get(id=listing_id)
-    offer = float(request.POST['offer'])
-    if is_valid(offer,listing):
-        listing.currentBid = offer
-        form = newBidForm(request.POST)
-        newBid = form.save(commit=False)
-        newBid.auction = listing
-        newBid.user = request.user                  
-        newBid.save()
-        listing.save()
-        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
-    else:
-        return render(request, "auctions/listing.html",{
-            "listing":listing,
-            "listing_pictures": listing.photos.all(),
-            "form" : newBidForm(),
-            "error_min_value":True
-        })    
-
-
-def is_valid(offer,listing):
-    if offer >= listing.startingBid and (listing.currentBid is None or offer > listing.currentBid):
-        return True
-    else:
-        return False 
-
-def close_listing(request,listing_id):
-    listing = Listing.objects.get(id=listing_id)
-    if request.user == listing.creator:
-        listing.flActive = False
-        listing.buyer = Bid.objects.filter(auction=listing).last().user
-        listing.save()   
-        return HttpResponseRedirect(reverse("listing", args=[listing_id]))
-    else:
-        listing.watchers.add(request.user)
-    return HttpResponseRedirect(reverse("watchlist"))
-
-
-@login_required
-def comment(request, listing_id):
-    listing = Listing.objects.get(id=listing_id)
-    form = newCommentForm(request.POST)
-    newComment = form.save(commit=False)
-    newComment.user = request.user
-    newComment.listing = listing
-    newComment.save()
-    return HttpResponseRedirect(reverse("listing", args=['listing_id']))
