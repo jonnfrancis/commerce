@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 
 from .models import *
 from django import forms
-from django.forms import ModelForm, modelformset_factory
+from django.forms import ModelForm
 
 
 class newListingForm(ModelForm):
