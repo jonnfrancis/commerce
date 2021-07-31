@@ -8,10 +8,7 @@
        {% else %}
           <div class="alert alert-danger">Something went wrong and your listing couldnt be added</div>    
        {% endif %}  
-    {%  endif  %}   
-    {%if message%}
-       <div class="alert alert-danger">{{message}}</div>
-    {%endif%}    
+    {%  endif  %}     
     <form action="{% url 'newListing' %}" method="post">
         {% csrf_token %}
         {{ form.as_p }}
